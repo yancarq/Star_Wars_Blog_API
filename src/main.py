@@ -33,11 +33,10 @@ def sitemap():
 @app.route('/user', methods=['GET'])
 def handle_hello():
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+    user = User.query.all()
+    all_user = list(map(lambda x: x.serialize(),user))
 
-    return jsonify(response_body), 200
+    return jsonify(all_user), 200
 
 
 @app.route('/people', methods=['GET'])
@@ -62,14 +61,61 @@ def handle_people(person_id):
 @app.route('/planet', methods=['GET'])
 def handle_all_planet():
 
-    people = People.query.all()
-    all_people = list(map(lambda x: x.serialize(),people))
+    planet = Planet.query.all()
+    all_planet = list(map(lambda x: x.serialize(),planet))
     # response_body = {
     #     "msg": "Hello, this is your GET /user response "
     # }
 
-    return jsonify(all_people), 200
+    return jsonify(all_planet), 200
 
+@app.route('/planet/<int:planet_id>', methods=['GET'])
+def handle_planet(planet_id):
+
+    planet = Planet.query.get(planet_id)
+    return jsonify(planet.serialize()), 200
+
+
+#favorites
+@app.route('/user/<int:user_id>/favorite', methods=['GET'])
+def get_fav(user_id):
+    query = User.query.get(user_id)
+    if query is None:
+        return('El usuario no tiene favoritos agregados')
+    else:
+        result = Favorite.query.filter_by(user_id= query.id)
+        fav_list = list(map(lambda x: x.serialize(), result))
+        return jsonify(fav_list), 200
+
+
+@app.route('/user/<int:user_id>/favorite', methods=['POST'])
+def add_fav(user_id):
+
+    body = request.get_json() 
+    # return body
+    
+    if body is None:
+        raise APIException("You need to specify the request body as a json object", status_code=400)
+
+    idPeople = body["idPeople"]
+    idPlanet = body["idPlanet"]
+
+    newFavorite = Favorite(user_id=user_id,people_id = idPeople,planet_id = idPlanet) 
+    db.session.add(newFavorite)
+    db.session.commit()
+    return {"mensaje":"registrado correctamente"}, 200
+
+#favorite delete
+@app.route('/favorite/<int:favorite_id>', methods=['DELETE'])
+def delete_fav(favorite_id):
+    query = Favorite.query.get(favorite_id)
+
+    if query is None:
+        return ({"mensaje":'El favorito no existe'}),300
+    else:
+        db.session.delete(query)
+        db.session.commit()
+        return {"mensaje":"eliminado correctamente"}, 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

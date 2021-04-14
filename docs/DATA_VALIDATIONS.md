@@ -20,17 +20,18 @@ def handle_person():
 
     # First we get the payload json
     body = request.get_json()
+    return body
+    
+    # if body is None:
+    #     raise APIException("You need to specify the request body as a json object", status_code=400)
+    # if 'username' not in body:
+    #     raise APIException('You need to specify the username', status_code=400)
+    # if 'email' not in body:
+    #     raise APIException('You need to specify the email', status_code=400)
 
-    if body is None:
-        raise APIException("You need to specify the request body as a json object", status_code=400)
-    if 'username' not in body:
-        raise APIException('You need to specify the username', status_code=400)
-    if 'email' not in body:
-        raise APIException('You need to specify the email', status_code=400)
-
-    # at this point, all data has been validated, we can proceed to inster into the bd
-    user1 = Person(username=body['username'], email=body['email'])
-    db.session.add(user1)
-    db.session.commit()
-    return "ok", 200
+    # # at this point, all data has been validated, we can proceed to inster into the bd
+    # user1 = Person(username=body['username'], email=body['email'])
+    # db.session.add(user1)
+    # db.session.commit()
+    # return "ok", 200
 ```
